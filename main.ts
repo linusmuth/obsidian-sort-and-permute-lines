@@ -77,6 +77,11 @@ export default class MyPlugin extends Plugin {
 			callback: (() => this.sortHeadings()),
 		});
 		this.addCommand({
+			id: 'sort-headings-reverse',
+			name: 'Sort headings in reverse',
+			callback: (() => this.sortHeadingsReverse()),
+		});
+		this.addCommand({
 			id: 'permute-reverse',
 			name: 'Reverse lines',
 			callback: (() => this.permuteReverse()),
@@ -177,6 +182,12 @@ export default class MyPlugin extends Plugin {
 		this.setLines(this.headingsToString(res).slice(1));
 	}
 
+	sortHeadingsReverse() {
+		const lines = this.getLines();
+		const res = this.getSortedHeadings(lines, 0, { headingLevel: 0, formatted: "", source: "", lineNumber: -1 }, true);
+		this.setLines(this.headingsToString(res).slice(1));
+	}
+
 	headingsToString(heading: HeadingPart): MyLine[] {
 		const list = [
 			heading.title,
@@ -186,7 +197,7 @@ export default class MyPlugin extends Plugin {
 		return list;
 	}
 
-	getSortedHeadings(lines: MyLine[], from: number, heading: MyLine): HeadingPart {
+	getSortedHeadings(lines: MyLine[], from: number, heading: MyLine, reverse_direction: boolean = false): HeadingPart {
 		let headings: HeadingPart[] = [];
 		let contentLines: MyLine[] = [];
 		let currentIndex = from;
@@ -217,7 +228,11 @@ export default class MyPlugin extends Plugin {
 				//First sort by heading level then alphabetically
 				const res = a.title.headingLevel - b.title.headingLevel;
 				if (res == 0) {
-					return this.compare(a.title.formatted.trim(), b.title.formatted.trim());
+					if (reverse_direction) {
+						return -this.compare(a.title.formatted.trim(), b.title.formatted.trim());
+					} else {
+						return this.compare(a.title.formatted.trim(), b.title.formatted.trim());
+					}
 				} else {
 					return res;
 				}
